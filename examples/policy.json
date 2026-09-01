@@ -1,0 +1,42 @@
+{
+  "default_action": "deny",
+  "roles": {
+    "researcher": {
+      "tools": {
+        "file_read": {
+          "params": {
+            "path": { "pattern": "^(/tmp/|/workspace/)" },
+            "max_bytes": { "max": 1048576 }
+          }
+        },
+        "web_search": {},
+        "web_fetch": {
+          "params": {
+            "url": { "pattern": "^(https?://)" }
+          }
+        }
+      }
+    },
+    "editor": {
+      "tools": {
+        "file_read": {
+          "params": {
+            "path": { "pattern": "^/workspace/" }
+          }
+        },
+        "file_write": {
+          "params": {
+            "path": { "pattern": "^/workspace/" },
+            "content": { "max_length": 65536 },
+            "overwrite": { "allowed_values": [true, false] }
+          }
+        }
+      }
+    },
+    "auditor": {
+      "tools": {
+        "audit_query": {}
+      }
+    }
+  }
+}
