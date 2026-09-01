@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agent-gate"
+version = "2.0.0"
+description = "Tool-call policy gateway for AI agents: least-privilege enforcement, short-lived credentials, and audit trail"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "Apache-2.0" }
+authors = [{ name = "agent-gate contributors" }]
+keywords = ["agent", "security", "mcp", "llm", "policy", "audit"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Security",
+]
+
+[project.scripts]
+agent-gate = "agent_gate.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["agent_gate*"]
