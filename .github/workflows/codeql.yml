@@ -26,3 +26,5 @@ jobs:
         with:
           languages: ${{ matrix.language }}
       - uses: github/codeql-action/analyze@v3
+
+# Note: first run may fail on improved-incremental disk limits; the next run falls back automatically.
