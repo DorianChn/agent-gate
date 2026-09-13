@@ -188,6 +188,14 @@ agent_gate/
 - 审计日志本身可能包含敏感元数据，建议加密存储并限权访问
 - Langfuse sink 为最小对接点，请按你的 Langfuse 版本 API 校验事件格式
 
+---
+
+## 🔗 同系列项目
+
+- [agent-canary](https://github.com/DorianChn/agent-canary) — AI Agent 蜜罐：诱饵 MCP 工具 + 泄密金丝雀
+- [traceplay](https://github.com/DorianChn/traceplay) — Agent 轨迹录制回放，离线零 token 测试
+- [reposieve](https://github.com/DorianChn/reposieve) — 隐私优先的仓库上下文打包
+
 ## License
 
 Apache-2.0。欢迎 issue / PR。
