@@ -377,6 +377,26 @@ class TestAlerts(unittest.TestCase):
         # counter resets; next single deny does not fire immediately
         self.assertEqual(router.feed(entry), [])
 
+    def test_deny_burst_requires_consecutive_matching_events(self):
+        from agent_gate.alerts import AlertRule, AlertRouter
+
+        router = AlertRouter(
+            [AlertRule("deny_burst", decision="deny", min_occurrences=3)],
+            [],
+        )
+        deny = {"decision": "deny", "tool": "file_read"}
+        allow = {"decision": "allow", "tool": "file_read"}
+        other_tool = {"decision": "deny", "tool": "web_fetch"}
+
+        self.assertEqual(router.feed(deny), [])
+        self.assertEqual(router.feed(allow), [])
+        self.assertEqual(router.feed(deny), [])
+        self.assertEqual(router.feed(deny), [])
+        self.assertEqual(router.feed(other_tool), [])
+        # The two earlier file_read denials were separated by non-matches;
+        # neither an allow nor another tool may contribute to the burst.
+        self.assertEqual(router.feed(deny), [])
+
     def test_webhook_sink_receives_alert(self):
         import threading as _th
         from http.server import BaseHTTPRequestHandler, HTTPServer

@@ -141,6 +141,7 @@ class AlertRouter:
         self.sinks = sinks
         self._counters: Dict[str, int] = {}
         self._cooldown_until: Dict[str, float] = {}
+        self._last_tool: Dict[str, str] = {}
         self._lock = threading.Lock()
 
     def feed(self, entry: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -149,9 +150,19 @@ class AlertRouter:
         with self._lock:
             now = time.time()
             for rule in self.rules:
+                tool = str(entry.get("tool", ""))
+                previous_tool = self._last_tool.get(rule.name)
+                if previous_tool is not None and previous_tool != tool:
+                    # Burst rules describe consecutive events for one tool;
+                    # an event for another tool breaks that sequence.
+                    self._counters["%s:%s" % (rule.name, previous_tool)] = 0
+                self._last_tool[rule.name] = tool
+                key = "%s:%s" % (rule.name, tool)
                 if not rule.matches(entry):
+                    # A same-tool event that does not match (for example an
+                    # allow between two denials) also breaks the sequence.
+                    self._counters[key] = 0
                     continue
-                key = "%s:%s" % (rule.name, entry.get("tool", ""))
                 self._counters[key] = self._counters.get(key, 0) + 1
                 if self._counters[key] < rule.min_occurrences:
                     continue
