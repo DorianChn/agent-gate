@@ -1,5 +1,7 @@
 # agent-gate v4
 
+[![CI](https://github.com/DorianChn/agent-gate/actions/workflows/ci.yml/badge.svg)](https://github.com/DorianChn/agent-gate/actions/workflows/ci.yml) [![CodeQL](https://github.com/DorianChn/agent-gate/actions/workflows/codeql.yml/badge.svg)](https://github.com/DorianChn/agent-gate/actions/workflows/codeql.yml)
+
 **Tool-call policy gateway for AI agents** — 在 AI Agent 与外部工具之间加一道策略闸门：最小权限执行、参数级控制、短期凭证、审计溯源、告警与多 server 编排。
 
 Agent 工具链正在快速扩张，而提示过滤和运行时观测并不能替代调用边界上的权限控制。agent-gate 把策略执行放在工具调用边界：在调用前强制最小权限，在调用后留下可审计记录，并把异常通过 Webhook 等方式通知出去。
