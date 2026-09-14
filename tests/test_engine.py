@@ -397,7 +397,6 @@ class TestAlerts(unittest.TestCase):
         srv = HTTPServer(("127.0.0.1", 0), Handler)
         thread = _th.Thread(target=srv.serve_forever, daemon=True)
         thread.start()
-
         def stop_server():
             srv.shutdown()
             thread.join(timeout=2)
@@ -441,7 +440,6 @@ class TestHttpGateway(unittest.TestCase):
         srv = ThreadingHTTPServer(("127.0.0.1", 0), GatewayHandler)
         t = _threading.Thread(target=srv.serve_forever, daemon=True)
         t.start()
-
         def stop_server():
             srv.shutdown()
             t.join(timeout=2)
