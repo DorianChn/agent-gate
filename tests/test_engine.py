@@ -397,11 +397,12 @@ class TestAlerts(unittest.TestCase):
         srv = HTTPServer(("127.0.0.1", 0), Handler)
         thread = _th.Thread(target=srv.serve_forever, daemon=True)
         thread.start()
-        # Stop the selector loop before closing the socket. This avoids
-        # Windows WSAENOTSOCK/WinError 10038 noise during test cleanup.
-        self.addCleanup(srv.server_close)
-        self.addCleanup(thread.join, 2)
-        self.addCleanup(srv.shutdown)
+        def stop_server():
+            srv.shutdown()
+            thread.join(timeout=2)
+            srv.server_close()
+
+        self.addCleanup(stop_server)
 
         router = AlertRouter(
             [AlertRule("deny_any", decision="deny")],
@@ -439,10 +440,12 @@ class TestHttpGateway(unittest.TestCase):
         srv = ThreadingHTTPServer(("127.0.0.1", 0), GatewayHandler)
         t = _threading.Thread(target=srv.serve_forever, daemon=True)
         t.start()
-        # Stop the selector loop before closing the socket on Windows.
-        self.addCleanup(srv.server_close)
-        self.addCleanup(t.join, 2)
-        self.addCleanup(srv.shutdown)
+        def stop_server():
+            srv.shutdown()
+            t.join(timeout=2)
+            srv.server_close()
+
+        self.addCleanup(stop_server)
         return srv.server_address[1]
 
     def _post(self, port, path, body):
