@@ -1,5 +1,7 @@
 """Unit tests for agent-gate core modules. Run: python -m unittest -v"""
 
+import hashlib
+import hmac
 import json
 import os
 import sys
@@ -144,14 +146,20 @@ class TestTokens(unittest.TestCase):
         with self.assertRaises(tk.InvalidTokenError):
             tk.verify(tampered, SECRET, now=1000)
 
+    def test_malformed_constraints_raise_invalid_token(self):
+        payload = "ag1.researcher.file_read.a.1300"
+        signature = hmac.new(
+            SECRET.encode("utf-8"), payload.encode("utf-8"), hashlib.sha256
+        ).hexdigest()
+
+        with self.assertRaises(tk.InvalidTokenError):
+            tk.verify(payload + "." + signature, SECRET, now=1000)
+
     def test_legacy_token_without_constraints(self):
         # A 5-part token (no constraints segment) must still verify.
-        import hashlib
-        import hmac as hmac_mod
-
         payload = "ag1.researcher.file_read.1000"
-        sig = hmac_mod.new(SECRET.encode("utf-8"), payload.encode("utf-8"),
-                           hashlib.sha256).hexdigest()
+        sig = hmac.new(SECRET.encode("utf-8"), payload.encode("utf-8"),
+                       hashlib.sha256).hexdigest()
         legacy = payload + "." + sig
         role, scope, constraints = tk.verify(legacy, SECRET, now=999)
         self.assertEqual((role, scope), ("researcher", "file_read"))
