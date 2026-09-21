@@ -17,6 +17,7 @@ An empty constraints segment means "no parameter constraints".
 """
 
 import base64
+import binascii
 import hashlib
 import hmac
 import json
@@ -62,7 +63,7 @@ def _decode_constraints(encoded):
         pad = "=" * (-len(encoded) % 4)
         raw = base64.urlsafe_b64decode(encoded + pad)
         value = json.loads(raw.decode("utf-8"))
-    except (ValueError, TypeError):
+    except (binascii.Error, ValueError, TypeError):
         raise InvalidTokenError("bad constraints payload")
     if not isinstance(value, dict):
         raise InvalidTokenError("constraints must be an object")
