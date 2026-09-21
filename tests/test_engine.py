@@ -518,6 +518,38 @@ class TestHttpGateway(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertTrue(data["allowed"])
 
+    def test_check_rejects_non_object_params(self):
+        port = self._start_server()
+        status, data = self._post(
+            port,
+            "/v1/check",
+            {"role": "researcher", "tool": "file_read", "params": ["/tmp/a"]},
+        )
+        self.assertEqual(status, 400)
+        self.assertEqual(data["error"], "'params' must be an object")
+
+    def test_check_rejects_non_string_credentials(self):
+        port = self._start_server()
+        for credential in ({"role": []}, {"token": 123}):
+            status, data = self._post(
+                port,
+                "/v1/check",
+                {**credential, "tool": "file_read", "params": {}},
+            )
+            self.assertEqual(status, 400)
+            self.assertIn("must be a non-empty string", data["error"])
+
+    def test_token_issue_rejects_invalid_ttl(self):
+        port = self._start_server()
+        for ttl in ("soon", 1.5, True, None):
+            status, data = self._post(
+                port,
+                "/v1/token/issue",
+                {"role": "researcher", "scope": "file_read", "ttl": ttl},
+            )
+            self.assertEqual(status, 400)
+            self.assertEqual(data["error"], "'ttl' must be an integer")
+
     def test_audit_endpoint(self):
         import http.client
 
