@@ -75,18 +75,33 @@ class GatewayHandler(BaseHTTPRequestHandler):
             self._send(400, {"error": "invalid JSON body"})
             return
         tool = data.get("tool")
-        params = data.get("params") or {}
+        raw_params = data.get("params")
+        if raw_params is None:
+            params = {}
+        elif not isinstance(raw_params, dict):
+            self._send(400, {"error": "'params' must be an object"})
+            return
+        else:
+            params = raw_params
         if not isinstance(tool, str) or not tool:
             self._send(400, {"error": "missing 'tool'"})
             return
         if "token" in data:
+            token = data["token"]
+            if not isinstance(token, str) or not token:
+                self._send(400, {"error": "'token' must be a non-empty string"})
+                return
             try:
-                decision = self.engine.check_token(data["token"], tool, params)
+                decision = self.engine.check_token(token, tool, params)
             except tk.TokenError as exc:
                 self._send(401, {"allowed": False, "error": str(exc)})
                 return
-        elif data.get("role"):
-            decision = self.engine.check(data["role"], tool, params)
+        elif "role" in data:
+            role = data["role"]
+            if not isinstance(role, str) or not role:
+                self._send(400, {"error": "'role' must be a non-empty string"})
+                return
+            decision = self.engine.check(role, tool, params)
         else:
             self._send(400, {"error": "require 'role' or 'token'"})
             return
@@ -99,7 +114,14 @@ class GatewayHandler(BaseHTTPRequestHandler):
             return
         role = data.get("role")
         scope = data.get("scope")
-        ttl = int(data.get("ttl", 300))
+        raw_ttl = data.get("ttl", 300)
+        try:
+            if isinstance(raw_ttl, bool) or not isinstance(raw_ttl, (int, str)):
+                raise ValueError
+            ttl = int(raw_ttl)
+        except (TypeError, ValueError, OverflowError):
+            self._send(400, {"error": "'ttl' must be an integer"})
+            return
         constraints = data.get("constraints")
         if not isinstance(role, str) or not isinstance(scope, str):
             self._send(400, {"error": "require 'role' and 'scope'"})
